@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Styled Todo App with Checkbox Inside Input</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .line-through {
+      text-decoration: line-through;
+    }
+    .bg-image {
+      background-image: url('to-do.png');
+      background-size: cover;
+      background-position: center;
+    }
+    .active-filter {
+      font-weight: bold;
+      color: yellow;
+    }
+  
+    .input-with-checkbox {
+      position: relative;
+      width: 100%;
+    }
+    .input-with-checkbox input[type="text"] {
+      width: 100%;
+      padding-left: 2rem; 
+    }
+    .input-with-checkbox input[type="checkbox"] {
+      position: absolute;
+      left: 0.5rem;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+  </style>
+</head>
+<body class="bg-black text-white transition-colors duration-500" id="main-body">
+   <div class="bg-image h-[30vh] p-20">
+    <div class="flex justify-center gap-60 ">
+        <h1 class="text-4xl font-bold tracking-widest">TODO</h1>
+        <button id="toggle-dark-mode" class="bg-gray-700 text-white px-4 py-2 rounded-md">
+          🌞 
+        </button>
+    </div>
+   </div>
+
+  <div class="w-full max-w-lg mx-auto bg-gray-800 rounded-lg shadow-md p-6 -mt-20 relative z-10" id="todo-container">
+   
+    <div class="input-with-checkbox mb-4">
+      <input type="checkbox" id="add-todo-checkbox">
+      <input type="text" placeholder="Add a new task" class="px-4 py-2 border border-gray-500 bg-gray-900 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500" id="new-task-input">
+    </div>
+
+    
+    <ul id="todo-list" class="space-y-3">
+      <li class="flex items-center justify-between text-gray-700 p-2 rounded-md">
+        <div class="flex items-center">
+          <input type="checkbox" class="mr-2" onclick="toggleTodo(this)">
+          <span class="todo-text">Complete-online-javascript-course</span>
+        </div>
+        <button class="text-xl" onclick="removeTodo(this)">✖</button>
+      </li>
+    </ul>
+
+    
+    <div class="flex justify-between items-center mt-4 text-gray-400">
+      <span id="items-left">5 items left</span>
+      <div>
+        <button id="active-filter" class="px-2" onclick="filterTodos('all')">All</button>
+        <button id="active-filter" class="px-2" onclick="filterTodos('active')">Active</button>
+        <button id="completed-filter" class="px-2" onclick="filterTodos('completed')">Completed</button>
+      </div>
+      <button class="px-2" onclick="clearCompleted()">Clear Completed</button>
+    </div>
+  </div>
+
+  <script>
+    // Array of Todos
+    let todos = [
+      { text: 'Jog around the park 3x', completed: false },
+      { text: '10 minutes meditation', completed: false },
+      { text: 'Read for 1 hour', completed: false },
+      { text: 'Pick up groceries', completed: false },
+      { text: 'Complete Todo App on Frontend Mentor', completed: false }
+    ];
+
+    function renderTodos() {
+      const todoList = document.getElementById('todo-list');
+      todoList.innerHTML = '';
+      todos.forEach((todo, index) => {
+        const li = document.createElement('li');
+        li.className = 'flex items-center justify-between bg-gray-700 p-2 rounded-md';
+        li.innerHTML = `
+          <div class="flex items-center">
+            <input type="checkbox" class="mr-2" ${todo.completed ? 'checked' : ''} onclick="toggleTodoStatus(${index})">
+            <span class="todo-text ${todo.completed ? 'line-through text-gray-400' : ''}">${todo.text}</span>
+          </div>
+          <button class="text-xl" onclick="removeTodo(${index})">✖</button>
+        `;
+        todoList.appendChild(li);
+      });
+      updateItemsLeft();
+    }
+
+    function addTodo() {
+      const taskInput = document.getElementById('new-task-input');
+      const todoText = taskInput.value.trim();
+      if (todoText === '') return;
+      todos.push({ text: todoText, completed: false });
+      taskInput.value = ''; // Clear the input field
+      renderTodos();
+    }
+
+    function toggleTodoStatus(index) {
+      todos[index].completed = !todos[index].completed;
+      renderTodos();
+    }
+
+    function removeTodo(index) {
+      todos.splice(index, 1);
+      renderTodos();
+    }
+
+    function updateItemsLeft() {
+      const itemsLeft = todos.filter(todo => !todo.completed).length;
+      document.getElementById('items-left').textContent = `${itemsLeft} items left`;
+    }
+
+    function clearCompleted() {
+      todos = todos.filter(todo => !todo.completed);
+      renderTodos();
+    }
+
+    function filterTodos(filter) {
+      const todoList = document.getElementById('todo-list');
+      todoList.innerHTML = '';
+      let filteredTodos = todos;
+      if (filter === 'active') {
+        filteredTodos = todos.filter(todo => !todo.completed);
+      } else if (filter === 'completed') {
+        filteredTodos = todos.filter(todo => todo.completed);
+      }
+      filteredTodos.forEach((todo, index) => {
+        const li = document.createElement('li');
+        li.className = 'flex items-center justify-between bg-gray-700 p-2 rounded-md';
+        li.innerHTML = `
+          <div class="flex items-center">
+            <input type="checkbox" class="mr-2" ${todo.completed ? 'checked' : ''} onclick="toggleTodoStatus(${index})">
+            <span class="todo-text ${todo.completed ? 'line-through text-gray-400' : ''}">${todo.text}</span>
+          </div>
+          <button class="text-xl" onclick="removeTodo(${index})">✖</button>
+        `;
+        todoList.appendChild(li);
+      });
+    }
+
+    
+    document.getElementById('add-todo-checkbox').addEventListener('click', function () {
+      if (this.checked) {
+        addTodo();
+        this.checked = false; 
+      }
+    });
+
+    renderTodos(); // Initial render
+
+    // Light/Dark Mode Toggle
+    const toggleButton = document.getElementById('toggle-dark-mode');
+    const body = document.getElementById('main-body');
+    const todoContainer = document.getElementById('todo-container');
+
+    toggleButton.addEventListener('click', function () {
+      if (body.classList.contains('bg-black')) {
+        body.classList.remove('bg-black', 'text-white');
+        body.classList.add('bg-white', 'text-black');
+        todoContainer.classList.remove('bg-gray-800');
+        todoContainer.classList.add('bg-gray-200');
+        toggleButton.textContent = '🌙 Dark Mode';
+      } else {
+        body.classList.remove('bg-white', 'text-black');
+        body.classList.add('bg-black', 'text-white');
+        todoContainer.classList.remove('bg-gray-200');
+        todoContainer.classList.add('bg-gray-800');
+        toggleButton.textContent = '🌞 Light Mode';
+      }
+    });
+  </script>
+</body>
+</html>
+
+
+
+
+
